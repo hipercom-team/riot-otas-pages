@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>SECURED OS/ Over the air updates - Makefile</title>
+        <link rel="stylesheet" href="http://riot-otas.gforge.inria.fr/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://riot-otas.gforge.inria.fr/">SECURED OS/ Over the air updates </a></h1>
+                <nav><ul>
+                    <li><a href="http://riot-otas.gforge.inria.fr/">About the experiment</a></li>
+                    <li><a href="http://riot-otas.gforge.inria.fr/pages/Overview.html">Overview</a></li>
+                    <li><a href="http://riot-otas.gforge.inria.fr/category/tutorials.html">Tutorials</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="http://riot-otas.gforge.inria.fr/Installation-v1.html">Installation</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2018-03-23T12:00:00+01:00">
+                Published: ven. 23 mars 2018
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://riot-otas.gforge.inria.fr/author/raul-fuentes.html">Raul FUENTES</a>
+        </address>
+<p>In <a href="http://riot-otas.gforge.inria.fr/category/tutorials.html">Tutorials</a>.</p>
+<p>tags: <a href="http://riot-otas.gforge.inria.fr/tag/tutorial.html">tutorial</a> <a href="http://riot-otas.gforge.inria.fr/tag/makefile.html">Makefile</a> <a href="http://riot-otas.gforge.inria.fr/tag/v10.html">v1.0</a> </p>
+</footer><!-- /.post-info --><h1>Local node</h1>
+<p>Almost all the tools used for our experiment requires Python modules.
+However, it's required to install some Linux tool</p>
+<h2>Linux</h2>
+<p>the following are Linux packages required to be already installed in the local host:</p>
+<ul>
+<li>socat</li>
+<li>jq</li>
+<li>Python (2.7 and &gt;=3.5)</li>
+<li>python-tk</li>
+<li>python3-tk</li>
+<li>pip3</li>
+<li>virtualenvwrapper</li>
+<li>virtualenv</li>
+<li>npm</li>
+<li>tshark</li>
+</ul>
+<p>They can be installed by means of apt-get or similar
+For debian based system they can be installed as follows:</p>
+<div class="highlight"><pre><span></span>apt-get install jq socat npm
+apt-get install python-pip python3-pip
+apt-get install python-tk python3-tk virtualenv  virtualenvwrapper
+apt-get install tftpd-hpa # Or your favorite TFTP server
+</pre></div>
+
+
+<h2>Python</h2>
+<p>Many of the Python modules are still in development (<code>Iotlab-mqtt</code>, <code>ssh-cli-tools</code>)
+and are better tested in Python 2 than Python 3. However, <code>ota-server</code>, which make
+use of asyncio, requires Python 3.2 or superior. This brings as consequence that
+python2 and python3 must be used in a mix, making complex the use of virtual
+environments.</p>
+<p>Therefore, for installing all the pythons modules are suggested to install them
+manually with the argument <code>--user</code>.</p>
+<p>Still, <code>scripts/Makefile</code> can be used for installing the modules (using the <code>--user</code> argument). You can use the following commands:
+sudo:</p>
+<div class="highlight"><pre><span></span>make clean
+make get-dist
+make pip-install-user
+</pre></div>
+
+
+<hr>
+<h1>Remote node (FIT IoTLab frontend)</h1>
+<p>The remote node only requires the Iot-lab tools installed. All of them work fine with Python2, therefore, it's possible to use the <code>script/Makefile</code> as follows:</p>
+<p><code>bash
+make server</code></p>
+<p>Of course, this means that the repository, or at least the Makefile, should be copied in the frontend.</p>
+<p>Yet, because there will SSH commands sends from the local node some considerations are required:</p>
+<ol>
+<li>Update the <code>~/.bashr</code> to let Python to be executable without interactive shell.</li>
+<li>Adding the remote node <code>~/.ssh/id_rsa.pub</code> to your FIT IoT-Lab account.</li>
+</ol>
+<hr>
+<h1>Known Issues</h1>
+<p>Review the FAQ section in the README.md (git repository) for a list of well-known issues when implementing the experiment.</p>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="https://www.armour-project.eu">ARMOUR H2020 Project</a></li>
+                            <li><a href="http://riot-os.org/">RIOT O.S.</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

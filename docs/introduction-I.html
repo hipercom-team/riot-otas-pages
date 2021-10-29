@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Introduction to the Secure OTA experiment</title>
+        <link rel="stylesheet" href="http://riot-otas.gforge.inria.fr/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://riot-otas.gforge.inria.fr/">SECURED OS/ Over the air updates </a></h1>
+                <nav><ul>
+                    <li><a href="http://riot-otas.gforge.inria.fr/">About the experiment</a></li>
+                    <li><a href="http://riot-otas.gforge.inria.fr/pages/Overview.html">Overview</a></li>
+                    <li class="active"><a href="http://riot-otas.gforge.inria.fr/category/tutorials.html">Tutorials</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="http://riot-otas.gforge.inria.fr/introduction-I.html" rel="bookmark"
+           title="Permalink to Introduction to the Secure OTA experiment">Introduction to the Secure OTA experiment</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2018-03-23T12:05:00+01:00">
+                Published: ven. 23 mars 2018
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://riot-otas.gforge.inria.fr/author/raul-fuentes.html">Raul FUENTES</a>
+        </address>
+<p>In <a href="http://riot-otas.gforge.inria.fr/category/tutorials.html">Tutorials</a>.</p>
+<p>tags: <a href="http://riot-otas.gforge.inria.fr/tag/tutorial.html">tutorial</a> <a href="http://riot-otas.gforge.inria.fr/tag/v10.html">v1.0</a> </p>
+</footer><!-- /.post-info -->      <p>The source code available for our project is available at
+<a href="https://gforge.inria.fr/projects/riot-otas">Inria forge</a>.</p>
+<p>The main objective of the experiment is to test, prototype and provide secured
+OTA (Over the air) updates for RIOT O.S.</p>
+<p>For the version 1.0 of this experiment, the <a href="https://www.iot-lab.info">FIT IoT-Lab Testbed</a> is being used. This testbed give us access to a great variety of sensors (we are using mostly A8-M3 nodes). The experiment is divided into a local node, running the  Secure OTA server, and the testbed which is manipulated by means of a MQTT broker. Also, the experiment compiles firmware with the <a href="http://riot-os.org/">RIOT O.S.</a>.</p>
+<p>The following image shows all the components involved in the experiment:</p>
+<p><img src="http://riot-otas.gforge.inria.fr/images/design.png" alt="The components of the experiment" style="max-width:100%;"/></p>
+<p>The remaining of this entry will focus on explaining the terminology associated
+to the experiment as well as the different components available in the source
+code repository.</p>
+<h1>Terms</h1>
+<ul>
+<li>
+<p>Local node: The host where the OTA-Server instance is running, this is
+ assumed that has a bridge with the 6LoWPAN.</p>
+</li>
+<li>
+<p>Remote node: The IoT-LAB site (Paris, Saclay, Grenoble, etc.) accessed
+ by means of a valid IoT-Lab account.</p>
+</li>
+<li>
+<p>6LowPAN: IoT-LAB testbed running the sensors. The sensors are handled by
+ means of [iot-lab-]MQTT instances. The 6LoWPAN is connected to the local node
+ by means of a bridge tunnel with the 6BR.</p>
+</li>
+<li>
+<p>Tests-cases: A series of cases for validating the feasibility of a secure OTA service.</p>
+</li>
+<li>
+<p>OTAS: In a terminology similar to CoAPs (CoAP secure) and HTTPs (HTTP Secure),
+this experiment makes use of OTAS for referencing OTA under a secure channel.</p>
+</li>
+</ul>
+<p>There are three entities on this experiment:
+<em> Device (the sensors or motes)
+</em> Software Device Entity (SDE)
+* Software Generation Entity (SGE)</p>
+<p>For this experiment, the SDE and SGE are executed in the local node. The Secure
+OTA server is basically the SDE.</p>
+<h2>Tests cases</h2>
+<p>There are five scenario to test:</p>
+<div class="highlight"><pre><span></span>1 (Good) - Standard operation of OTA (new firmware available).
+2 (Bad)  - The SDE offers a wrong signature firmware to the device.
+3 (Ugly) - The SDE offers a corrupted firmware to the device.
+4 (Grey) - Standard operation of OTA (not new firmware available)
+5 (Blue) - Communication is running over CoAP Secure
+</pre></div>
+
+
+<hr>
+<h1>Components of the experiment</h1>
+<p>The content of the git repository for our Secure OTA experiment (also, referred
+as experiment 4 in the ARMOUR H2020 project) is as follows:</p>
+<div class="highlight"><pre><span></span>| - firmwares/
+| - scripts/
+|   | - exp4tools/
+|   | - *.json
+|   | - *.sh
+|   | - Makefile
+| - README.md
+</pre></div>
+
+
+<p>As can be seen, is composed by:</p>
+<ol>
+<li>A series of firmwares for the tests cases</li>
+<li>JSON configurations files</li>
+<li>Bash scripts</li>
+<li>Python scripts (scripts/exp4tools)</li>
+<li>A Makefile</li>
+<li>A README.md file for the project</li>
+</ol>
+<hr>
+<h2>A series of firmwares for the tests cases</h2>
+<p>These are a series of firmwares (or images) previously generated with
+the support for OTA. They are intended to save time in the testings as
+compilation is a highly demanding task and not required for TITAN.</p>
+<p><strong><strong>NOTE</strong></strong>: <a href="http://riot-os.org/">RIOT O.S</a>: is used for all the images.</p>
+<p>This is the general description of the firmwares:</p>
+<div class="highlight"><pre><span></span>|Firmwares
+|-a8-m3-ota-dtls/        Images for IOTLAB-A8-M3 nodes (all the tests
+|                        cases).
+|-m3-ota-plaintext/      Images for testing non-secure OTA over
+|                        IOTLAB-M3 nodes (4/5 tests cases).
+|-m3-ota-dtls/           Images for IOTLAB-M3 nodes (4/5 tests cases).
+|-samr21-ota-plaintext/  Images for testing non-secure OTA over
+|                        SAMR21-XPRO nodes (4/5 tests cases).
+|- Keys/                 Keys used for signing the firmwares.
+|- gnrc_border_router_*  6BR image for IOTLAB-M3 or IOTLAB-A8-M3 nodes.
+</pre></div>
+
+
+<hr>
+<h2>JSON configurations files</h2>
+<p>Experiment 4 can make use of JSON syntax for defining multiple fields
+for the testings.</p>
+<p>By default, there are two configuration files:</p>
+<ul>
+<li>config-file.json: Run the tests on multiple sensors (ota nodes)
+                    at the same time.</li>
+<li>
+<p>config-iotlab.json: Run the tests on a single sensor.
+                      It's expected to be used by TITAN.</p>
+</li>
+<li>
+<p>Run the tests on multiple sensors (ota nodes) at the same time</p>
+</li>
+</ul>
+<hr>
+<h2>Makefile</h2>
+<p>This Makefile is intended to install all the Python modules required
+for running the testings, including any GIT repository required.</p>
+<p>It's intended to be executed on the client side and the server (FIT
+IoT-Lab testbed) with different rules. Also, it should be used in a
+virtual environment for reducing risks of compatibility issues.</p>
+<p>You can find more information about the Makefile in the <a href="http://riot-otas.gforge.inria.fr/Installation-v1.html">installation entry</a>.</p>
+<hr>
+<h2>Shell scripts</h2>
+<p>Those are a series of shell scripts required for the following tasks:</p>
+<ul>
+<li>Generating firmware (using RIOT O.S.), including use of scp</li>
+<li>Launching the FIT IoT-LAB experiment</li>
+<li>Launching (iot-lab-)MQTT Agents  on the testbed site</li>
+<li>Canceling the experiment and killing the iotlab-mqtt agents.</li>
+<li>Flashing master firmware over the A8-M3 nodes</li>
+</ul>
+<p>The scripts ares:</p>
+<ul>
+<li><code>scripts/deploy.sh</code>: Script for generating firmwares at fly</li>
+<li><code>scripts/iot-lab.sh</code>: Script for preparing FIT IoT-LAB testbed</li>
+<li><code>scripts/terminate.sh</code>: Script for cleaning FIT IoT-LAB testbed</li>
+<li><code>scripts/A8/flash_ota_a8_m3.sh</code>: Added custom openocd script</li>
+<li><code>scripts/deploy.sh</code>: Support for compiling RIOT firmwares</li>
+</ul>
+<p>Notes:</p>
+<ul>
+<li>All the scripts support the json configuration file.</li>
+<li>deploy.sh special notes:<ul>
+<li>requires mandatory use of arguments for selecting firmware.</li>
+<li>Binaries with slots are send to UPLOADS/ while the 6BR and base
+image are sent to ../tmp. The latest is also copied in the remote
+FIT IoT-LAB testbed (<site>/A8/)</li>
+</ul>
+</li>
+</ul>
+<h3>test_pcap.sh</h3>
+<p>This script was taken from Experiment 1 with slight modifications
+for supporting our json configuration file.</p>
+<hr>
+<h2>Python scripts</h2>
+<p>The directory scripts/exp4tools contains all the python scripts made
+for manipulating the (iot-lab-)MQTT agents and the sensors.</p>
+<p>The following is a brief explanation of said scripts:</p>
+<ul>
+<li><code>exp4tools/ssh/forward.py</code>: SSH tunnel functions</li>
+<li><code>exp4tools/parsers.py</code>: Arguments parser for the python scripts</li>
+<li><code>exp4tools/common.py</code>: Common tools for the python scripts</li>
+<li><code>exp4tools/borderouter.py</code>: Handles the 6BR and ethos tunnel</li>
+<li><code>exp4tools/otanodes.py</code>: Handles the support for the OTA-nodes/sensors</li>
+<li><code>exp4tools/gui.py</code>: Support for a GUI controller</li>
+<li><code>exp4tools/sniffer.py</code>: Handles the support for MQTT Radiosniffer agent</li>
+<li><code>exp4tools/ps/pshandler.py</code>: Classes for manipulating bash scripts</li>
+<li><code>exp4tools/ps/otashandler.py</code>: Classes for manipulating OTAS and TFTP</li>
+<li><code>exp4tools/tests.py</code>: Script to analyze the results obtained</li>
+<li><code>exp4tools/titan.py</code>: Script to be invoked remotely by TITAN</li>
+</ul>
+<h3>exp4tools/gui.py: Support for a GUI controller</h3>
+<p>A master controller for handling the experiment in local.</p>
+<ul>
+<li>6BR Fully supported</li>
+<li>MQTT agents over testbed supported</li>
+<li>MQTT clients agents supported</li>
+<li>Support for uploading firmwares</li>
+<li>Support for serial linestart/stopall [log file]</li>
+<li>Support for Sniffer (MQTT sniffer agent)</li>
+<li>Support for the OTAS server and TFTP server</li>
+</ul>
+<h3>exp4tools/titan.py</h3>
+<p>This script is similar on arguments and output to <code>exp4tools/tests.py</code>
+However, this also involves manipulation of the FIT IoT-LAB Testbed.</p>
+<h3>exptrl.py</h3>
+<p>This python script must be executed before TITAN can interact with Exp4.</p>
+<p>The interaction between TITAN and Exp4 is by means of the script:</p>
+<p><code>exp4tools/titan.py &lt;Test&gt;</code></p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="https://www.armour-project.eu">ARMOUR H2020 Project</a></li>
+                            <li><a href="http://riot-os.org/">RIOT O.S.</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

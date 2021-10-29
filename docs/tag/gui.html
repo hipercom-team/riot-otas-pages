@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>SECURED OS/ Over the air updates - GUI</title>
+        <link rel="stylesheet" href="http://riot-otas.gforge.inria.fr/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://riot-otas.gforge.inria.fr/">SECURED OS/ Over the air updates </a></h1>
+                <nav><ul>
+                    <li><a href="http://riot-otas.gforge.inria.fr/">About the experiment</a></li>
+                    <li><a href="http://riot-otas.gforge.inria.fr/pages/Overview.html">Overview</a></li>
+                    <li><a href="http://riot-otas.gforge.inria.fr/category/tutorials.html">Tutorials</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="http://riot-otas.gforge.inria.fr/gui-v1.html">Tutorial for the Graphical User Interface</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2018-04-09T12:00:00+02:00">
+                Published: lun. 09 avril 2018
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://riot-otas.gforge.inria.fr/author/raul-fuentes.html">Raul FUENTES</a>
+        </address>
+<p>In <a href="http://riot-otas.gforge.inria.fr/category/tutorials.html">Tutorials</a>.</p>
+<p>tags: <a href="http://riot-otas.gforge.inria.fr/tag/tutorial.html">tutorial</a> <a href="http://riot-otas.gforge.inria.fr/tag/gui.html">GUI</a> <a href="http://riot-otas.gforge.inria.fr/tag/v10.html">v1.0</a> </p>
+</footer><!-- /.post-info --><p>It's possible to handle all the steps of the experiment with  <code>scripts/exp4tools/gui.py</code> whichs launch a GUI composed of three tabs.</p>
+<p><strong><strong>TIP</strong></strong>: If the user does not have enough privileges, is a good idea to run
+<code>sudo whoami</code> before starting this section (or any command with sudo OR
+do not require password for sudo).</p>
+<h2>General steps</h2>
+<p>The following are the general steps for this experiment:</p>
+<ol>
+<li>Mount the OTA-server and the TFTP server.</li>
+<li>Compiles firmwares (optional).</li>
+<li>Send a copy of <code>scripts/A8/flash_ota_a8_m3.sh</code> and the combined binary to the FIT IoT-LAB</li>
+<li>Launch the FIT IoT-LAB testbed.</li>
+<li>Load the MQTT instances on the remote side.</li>
+<li>Prepare the bridge between the local node and the 6BR.</li>
+<li>Prepare the MQTT sniffer agent.</li>
+<li>Prepare the MQTT Serial agent for the client (and capture the output)</li>
+<li>Load the firmware over the A8 nodes.</li>
+<li>Run the testings.</li>
+<li>Analyses the pcap and log files generated in the previous step.</li>
+<li>Return the results</li>
+</ol>
+<hr>
+<h1>Running tests by means of GUI</h1>
+<h2>The GUI</h2>
+<p>Once that <code>python exp4tools/gui.py</code> is executed the following GUI will appear:</p>
+<p><img src="http://riot-otas.gforge.inria.fr/images/gui_tab1_1.png" alt="Default " style="max-width:100%;"/></p>
+<p>There are three main tabs:
+1- FIT IoT-LAB Controller
+2- MQTT controller
+3- Running testings</p>
+<p>The first tab handles the manipulation of the FIT Testbed, the local OTAS server (composed by an <a href="https://github.com/rfuentess/ota-server/tree/OTA-DTLS">OTA server</a> and a TFTP server ) and the behavior of the firmwares compilation. The second tab handles the manipulation of MQTT agents on local and remote sites. And finally, the third tab handles the capture and processing of logs required for the testings.</p>
+<p>Buttons on red or blue are "modal" buttons. Which have an OFF status on RED, and ON status on blue.</p>
+<h3>FIT IoT-LAB Controller</h3>
+<p>As shown in the previous image, this tab is separated in three categories:</p>
+<p>1- <code>FIT IoT-LAB Testbed status</code>
+2- <code>OTA-Server</code> status)
+3 - <code>Firmwares (source and paths)</code></p>
+<p>Most of the information shown in this tab is taken directly of the configuration file.</p>
+<h4><code>FIT IoT-LAB Testbed status</code></h4>
+<ul>
+<li>
+<p><code>Exp. ID</code> This value can be populated from the beginning by means of <code>data/iotlabid</code>, a temporary file created when a FIT IoT-LAB experiment is launched by one of our scripts (including pressing the button to the right of this field). It's also validate that the current status of the experiment is <code>running</code>. Otherwise, will display zero ("0") as showed in the previous figure.</p>
+</li>
+<li>
+<p><code>6BR node</code> this field displays the value  for the field <code>experiment</code>.<code>node_6br</code> (defining which node will be handled as the border router). The FIT IoT-LAB testbed syntax is used here.</p>
+</li>
+<li><code>OTA Nodes</code> this field displays the value  for the field <code>experiment</code>.<code>node_6br</code> (defining which node(s) will be used for running the testings). The FIT IoT-LAB testbed syntax is used here.</li>
+</ul>
+<h4><code>OTA-Server</code></h4>
+<p>The buttons for the OTA-Server turn on/off the TFTP (UDP port 69) and OTA (UDP port 5684) servers.  </p>
+<p><strong><strong>NOTE</strong></strong>: Because of a temporary limitation of the PRNG implementation of RIOT O.S., it's a good idea to reset the OTA server between testings.  </p>
+<h4><code>Firmwares (source and paths)</code></h4>
+<p>Those fields define if the firmwares are going to be compiled at fly (radio button <code>Compile</code>) or will be copied from <code>Firmwares/</code> (radio button <code>default</code>).</p>
+<p>The firmwares are divided into 2 types: The one used for the 6BR, which is an RIOT generic example. And the firmware used for testing the Over-the-air updates.</p>
+<h3>MQTT controller</h3>
+<p><img src="http://riot-otas.gforge.inria.fr/images/gui_tab2_1.png" alt="Default " style="max-width:100%;"/></p>
+<h4>Services over the testbed</h4>
+<p>The first row of modal buttons, open/close the Ethos tunnel between the local site and the FIT IoT-LAB testbed. This is done in three steps: make an SSH port forwarding session to the FIT IoT-Lab testbed (ssh button). Using socat to create a link between the port forwarded to a logical interface (socat button) and finally running the Ethos script over the logical interface (Ethos button).</p>
+<p>The second row of modal buttons launches or kills the MQTT instances over the FIT IoT-LAB testbed.</p>
+<p><strong><strong>NOTE</strong></strong>: For the version 1.0, the MQTT radiosniffer instance is handled directly in the tab "Running testings".</p>
+<h4>MQTT topics (OTA nodes)</h4>
+<p>The first row launches or kills the MQTT client instances on the local node. The the second row handles the operation available for the MQTT client node instance (turning on the nodes or restarting them).</p>
+<p><strong><strong>NOTE</strong></strong>: For the version 1.0, the MQTT client radiosniffer instance is handled directly in the tab "Running testings".</p>
+<p><strong><strong>NOTE</strong></strong>: For the version 1.0, the "Power (ON)" and "Restart" are achieved by means of the MQTT process instance. This is due that the support for A8-M3 nodes was not merged.</p>
+<h4>OTA Firmware versions</h4>
+<p>The buttons "Generated", "Good", "Bad" and "Ugly" are linked to the tab 1. All of them will compile, or copies, the firmwares required for the testbed.</p>
+<p><strong><strong>NOTE</strong></strong>: The V1 "Generated" button is only one that sends a copy of the firmware to the FIT IoT-LAB testbed.</p>
+<p>The 6BR "Upload" button is using only MQTT client node instance for uploading the firmware to the 6BR node.</p>
+<p>The V1 "Upload" button is uploading the starting firmware version for the OTA nodes by means of the MQTT client process instance.</p>
+<h3>Running testings</h3>
+<p><img src="http://riot-otas.gforge.inria.fr/images/gui_tab3_1.png" alt="Default " style="max-width:100%;"/></p>
+<p>This is dived into two parts: Enabling/disabling the capture of data. And showing the results of the testings.</p>
+<h4>Tests</h4>
+<p>The modal button "Sniffer (pcap)" starts/stop the capture of raw network traffic over the 6LoWPAN domain.</p>
+<p>The modal button "Log" starts/stops the capture of the serial interface of the nodes used in the test.</p>
+<p>The button "Force OTA message" force the nodes to send a new  OTA request to the server.</p>
+<p><strong><strong>NOTE</strong></strong>: For the version 1.0, "Force OTA message" actually reboot the node.</p>
+<h3>Processign the results</h3>
+<p>For this part, the other modal buttons (on this tab) should be on OFF mode (red text).</p>
+<p>The first button process the pcap file generated  which is used for the TEST 5.</p>
+<p>The second button, process the serial traffic captured so far for all the other tests.</p>
+<h2>Example</h2>
+<p><strong><strong>TIP</strong></strong>: If the user does not have enough privileges, is a good idea to run
+<code>sudo whoami</code> before starting this section (or any command with sudo OR
+do not require password for sudo).</p>
+<p>Run <code>python exp4tools/gui.py</code></p>
+<p>A new window with 3 tabs will be opened. Follow these steps:</p>
+<h3>1- Tab 1</h3>
+<ol>
+<li>Press the three buttons (start experiment, ota-server and tftpd)</li>
+</ol>
+<h3>2- Tab 2</h3>
+<ol>
+<li>Press <code>Node</code>, <code>Serial</code>, <code>Process</code> (enable MQTT agents over the remote site)</li>
+<li>Press <code>Client Node</code>,<code>Client Process</code>,<code>Client Serial</code> (starts MQTT subscriptions)</li>
+<li>Press both buttons labeled <code>Generated</code> (this creates binaries at ../tmp for 6BR and sensors)</li>
+<li>Press <code>upload</code> for the 6BR (Load the firmwares for the 6BR)</li>
+<li>Press <code>ethos</code> (this launch the ethos tunnel and also enable <code>ssh</code> and <code>socat</code>). <em>NOTE</em>: This step takes around half minute (10 seconds by button or action).</li>
+</ol>
+<h3>3- Tab3</h3>
+<ol>
+<li>Press <code>sniffer (pcap)</code> (This start to capture raw traffic in the testbed)</li>
+<li>Press <code>(start) log</code> (This start to capture serial output from the sensors)</li>
+</ol>
+<p><strong><strong>NOTE</strong></strong> From this point Wireshark can be very useful. Alternatively, a second MQTT Clients serial agent can be started (the broker send the messages to both agents). Or a timer</p>
+<h3>4- Tab2</h3>
+<ol>
+<li>Press <code>Good</code> (this create the 0x03 version in the ota-server)</li>
+<li>Press <code>Upload</code> for the V1 (this load the 0x01 firmware in all the OTA nodes). <strong>NOTE</strong> This can take some time.</li>
+</ol>
+<h3>5- Tab3</h3>
+<ol>
+<li>Press <code>Force OTA message</code> (or wait until the next OTA reuest)</li>
+</ol>
+<p><strong><strong>NOTE</strong></strong>: This step is very slow. Wireshark can be used to confirm the transfer is finished (due not more request). Around 2 minutes or more.</p>
+<h3>6- Tab3</h3>
+<ol>
+<li>Press <code>Force OTA message</code> (or wait until the next OTA reuest). This is for the test 4 (GREY).</li>
+<li>Wait until the request is done (1 minute).</li>
+</ol>
+<h3>7- Tab2</h3>
+<ol>
+<li>Press <code>BAD</code> (this create the 0x04 version in the ota-server)</li>
+</ol>
+<h3>8- Tab3</h3>
+<ol>
+<li>Press <code>Force OTA message</code> (or wait until the next OTA reuest)</li>
+<li>Wait another 2 minutes to finish the process</li>
+</ol>
+<h3>9- Tab2</h3>
+<ol>
+<li>Press <code>UGLY</code> (this create the 0x05 version in the ota-server)</li>
+</ol>
+<h3>10- Tab3</h3>
+<ol>
+<li>Press <code>Force OTA message</code> (or wait until the next OTA reuest)</li>
+<li>
+<p>Wait another 2 minutes to finish the process</p>
+</li>
+<li>
+<p>Press again <code>sniffer (pcap)</code> and <code>(start) log</code> to stop the sniffers. At this point ../data will have a pcap and a log file.</p>
+</li>
+<li>Press <code>Process the PCAP</code>.</li>
+<li>Press <code>Process OTA output</code>.</li>
+</ol>
+<p>Last step: Return to tab1 and press the first button to terminate the experiment.</p>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="https://www.armour-project.eu">ARMOUR H2020 Project</a></li>
+                            <li><a href="http://riot-os.org/">RIOT O.S.</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

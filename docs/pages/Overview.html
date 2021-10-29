@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Overview</title>
+        <link rel="stylesheet" href="http://riot-otas.gforge.inria.fr/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://riot-otas.gforge.inria.fr/">SECURED OS/ Over the air updates </a></h1>
+                <nav><ul>
+                    <li><a href="http://riot-otas.gforge.inria.fr/">About the experiment</a></li>
+                    <li class="active"><a href="http://riot-otas.gforge.inria.fr/pages/Overview.html">Overview</a></li>
+                    <li><a href="http://riot-otas.gforge.inria.fr/category/tutorials.html">Tutorials</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+    <h1 class="entry-title">Overview</h1>
+    
+    <h1>Secured OS / Over the air updates</h1>
+<h2>INRIA</h2>
+<p>For ARMOUR H2020</p>
+<ul>
+<li>Raul Fuentes Samaniego: raul.fuentes-samaniego@inria.fr</li>
+<li>Cedric Adjih: cedric.adjih@inria.fr</li>
+<li>Emmanuel Baccelli: emmanuel.baccelli@inria.fr</li>
+</ul>
+<p>OTA main developers:</p>
+<ul>
+<li>Francisco Acosta: francisco.acosta@inria.fr</li>
+<li>Alexandre Abadie: alexandre.abadie@inria.fr</li>
+</ul>
+<hr>
+<h2>Experiment deployment</h2>
+<h3>Entities</h3>
+<ul>
+<li>Device</li>
+<li>Software Device Entity (SDE)</li>
+<li>Software Generation Entity (SGE)</li>
+</ul>
+<h3>Data in the different entities</h3>
+<ul>
+<li>Firmware image for device (<code>FirmwareImage</code>), that includes:</li>
+<li>firmware content (<code>firmwareContent</code>): string of bytes</li>
+<li>
+<p>firmware meta-data (<code>firmwareMetaData</code>):  signature from software generation entity, size, application index (<code>firmwareHash</code>, <code>firmwareSignature</code>, <code>firmwareSize</code>, <code>firmwareVersion</code>, <code>appId</code>)</p>
+</li>
+<li>
+<p>Firmware image for distribution (<code>DistributedFirmwareImage</code>):</p>
+</li>
+<li>firmware image (<code>firmwareImage</code>)</li>
+<li>firmware name (<code>firmwareName</code>) which is used for designating the firmware wished from download</li>
+</ul>
+<hr>
+<h3>Messages exchanges by the different entities</h3>
+<ul>
+<li><code>RequestFirmwareLastVersion</code></li>
+<li>
+<p><code>appId</code>: identifier of the firmware requested (uid for one application, platform, etc.)</p>
+</li>
+<li>
+<p><code>ReplyFirmwareLastVersion</code></p>
+</li>
+<li>
+<p><code>lastVersion</code>: the last version -or- an indication that none is available</p>
+</li>
+<li>
+<p>RequestFirmware</p>
+</li>
+<li><code>appId</code>: identifier of the firmware requested (uid for one application, platform, etc.)</li>
+<li><code>firmwareSlotIndex</code>: identifier of the slot for storing <code>firmwareImage</code></li>
+<li><code>firmwareVersion</code>: the version of the firmware</li>
+<li>ReplyFirmware</li>
+<li><code>firmwareImage</code>: a firmware image -or- an indication that the requested firmware image is not available</li>
+</ul>
+<hr>
+<h3>Information maintained in each of the data-structures</h3>
+<ul>
+<li>Software Generation Entity (SGE)</li>
+<li>
+<p>signing private key and signing public key (<code>signingPrivateKey</code>, <code>signingPublicKey</code>)</p>
+</li>
+<li>
+<p>Software Distribution Entity (SDE)</p>
+</li>
+<li>DTLS keys: ONE of those:<ul>
+<li>asymmetric: public,private (<code>dtlsPublicKey</code>, <code>dtlsPrivateKey</code>)</li>
+<li>PSK (<code>dtlsPsk</code>)</li>
+</ul>
+</li>
+<li>
+<p>List of firmware images for distributions (<code>distributedFirmwareImage</code>)</p>
+</li>
+<li>
+<p>Device</p>
+</li>
+<li>DTLS keys: ONE of those:<ul>
+<li>asymmetric: public,private (<code>dtlsPublicKey</code>, <code>dtlsPrivateKey</code>)</li>
+<li>PSK (<code>dtlsPsk</code>)</li>
+</ul>
+</li>
+<li>List of firmware slots. A firmware slot corresponds to one <code>FirmwareImage</code>:<ul>
+<li>one is the currently booted image: <code>currentFirmwareImage</code></li>
+<li>another is the <code>newFirmwareImage</code> (that will be downloaded by the below procedure)</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3>Protocol description of Over-The-Air programming (OTA):</h3>
+<p><img src="http://riot-otas.gforge.inria.fr/images/flow_OTA.png" alt="The components of the experiment" style="max-width:100%;"/></p>
+<p>The generic OTA scenario is the following (functional Firmware Scenario):</p>
+<p>OTA Device protocol:</p>
+<ol>
+<li>
+<p>The end-device node queries the Software Distribution Entity for potential updates.</p>
+<ul>
+<li>The device establishes a secure connection (DTLS) with <code>device.dtlsPrivateKey</code> and <code>sde.dtlsPublicKey</code> -or- <code>dtlsPsk</code></li>
+<li>if channel establishment fails: the device stops the whole procedure.</li>
+<li>if it succeeds: the device proceeds to next step</li>
+<li>Using the secure channel, the device sends a request to get the latest version of the firmware <code>RequestFirmwareLastVersion</code>. The request includes the following information:</li>
+<li><code>appId</code>, which is taken from the <code>currentFirmwareImage</code> that has been booted.</li>
+<li>The server sends a reply with the secure channel <code>ReplyFirmwareLastVersion</code>. It includes the last version <code>lastVersion</code></li>
+<li>If the reply times-out, is incorrect, or does not include a proper <code>reply.lastVersion</code> (e.g. not empty), the device stops (error detected).</li>
+<li>If it succeeds the reply <code>reply.lastVersion</code> is compared the currently booted firmware image <code>currentFirmwareImage.firmwareVersion</code>. If the firmware image is same or older (lower version), the device stops the procedure. Otherwise it proceeds to next step.</li>
+</ul>
+</li>
+<li>
+<p>The end-device node downloads the last firmware from the Software Distribution Entity</p>
+<ul>
+<li>The device establishes a secure connection (DTLS) with <code>device.dtlsPrivateKey</code> and <code>sde.dtlsPublicKey</code> -or- <code>dtlsPsk</code> if required.</li>
+<li>if the previous secure channel is still valid, the device proceeds to next next step.</li>
+<li>if channel establishment fails: the device stops the whole procedure.</li>
+<li>if it succeeds: the device proceeds to next step</li>
+<li>Using the secure channel, the device downloads the latest version of the firmware  through a request <code>RequestFirmware</code>. The request includes the following information: <code>appId</code> (from the <code>currentFirmwareImage</code>), <code>firmwareSlotIndex</code> and <code>firmwareVersion</code> (obtained from the <code>reply.lastVersion</code> in previous step).</li>
+<li>The server sends a reply <code>replyFirmware</code>. It includes as a content a <code>FirmwareImage</code>.</li>
+<li>If the reply times-out, is incorrect, or does not include a proper <code>FirmwareImage</code>, the device stops (error detected). Otherwise the downloaded image is stored in <code>newFirmwareImage</code> and the device proceeds to next step.</li>
+</ul>
+</li>
+<li>
+<p>The device validates and boots the new image <code>newFirmwareImage</code>:</p>
+<ul>
+<li>The device computes the hash of the <code>newFirmwareImage.firmwareContent</code> and checks that it matches <code>newFirmwareImage.firmwareMetaData.firmwareHash</code></li>
+<li>If the new shash is invalid, an error is detected and the device stays with the current image. Otherwise:</li>
+<li>The device checks the <code>newFirmwareImage.firmwareMetaData.firmwareSignature</code> signature of the image with the <code>signingPublicKey</code> of the SGE (signature is computed on <code>newFirmwareImage.firmwareMetaData</code> without signature field).</li>
+<li>If the new signature is invalid, an error is detected and the device stays with the current image. Otherwise:</li>
+<li>Success: the device boots the new image <code>newFirmwareImage</code></li>
+</ul>
+</li>
+</ol>
+<p>In this exchange sequence, the communication between the end-device node and the Software Distribution Entity transparently circulate through one border router (constrained device) and the associated bridging/tunnelling software (on Linux, ethos).</p>
+<p>SDE OTA Protocol:</p>
+<ol>
+<li>The Software Distribution Entity waits for a connection</li>
+<li>When a connection is detected,<ul>
+<li>it establishes a secure channel (with DTLS):</li>
+<li>with symmetric cryptography: with the <code>dtlsPsk</code></li>
+<li>with asymmetric cryptography: with its <code>sde.dtlsPrivateKey</code> and a list of the clients <code>sde.dtlsPublicKey</code>(s)</li>
+<li>channel establishment fails, the server drops the connection, otherwise it proceeds to next step</li>
+</ul>
+</li>
+<li>Answering the device request:<ul>
+<li>If the request is a <code>RequestFirmwareLastVersion</code></li>
+<li>The server check the <code>appId</code>, and looks for matching firmwares in the list of <code>distributedFirmwareImage</code>, and selects the last version.</li>
+<li>If there is a at least one matching firmware, the server sends a reply with the secure channel <code>ReplyFirmwareLastVersion</code> that includes the last version <code>lastVersion</code>. Otherwise, the reply includes a notification that such a version is not available.</li>
+<li>else if the request is a <code>RequestFirmware</code></li>
+<li>The server check the <code>appId</code> and <code>firmwareVersion</code>, and looks for the matching firmware in the list of <code>distributedFirmwareImage</code>.</li>
+<li>If the firmware is found, the server sends a reply with the secure channel replyFirmware that includes it. Otherwise, it sends a reply with a notification that such a firmware does not exists.</li>
+<li>else the server sends an error message (because it cannot interpret the message)</li>
+</ul>
+</li>
+</ol>
+<p>SGE Protocol (offline):</p>
+<ul>
+<li>The Software Generation Entity compiles a new firmware image FirmwareImage</li>
+<li>The SGE fills the proper fields of this image, including the <code>firmwareHash</code>, <code>firmwareSignature</code>, and obtains a proper <code>DistributedFirmwareImage</code>.</li>
+<li>The SGE DistributedFirmwareImage is transmitted to the SDE by some means (network, usb key transfer, etc...)</li>
+<li>The SDE adds the new image in its list of DistributedFirmwareImage.</li>
+</ul>
+<hr>
+<h1>Summary</h1>
+<p>DATA OVER ENTITIES</p>
+<div class="highlight"><pre><span></span>* FirmwareImage              - Firmware Image for DEVICE
+    - firmwareContent        - String content
+    - firmwareMetaData
+        - firmwareSignature  - Signature of the metadata (including the hash)
+        - firmwareSize       - Size of the image
+        - firmwareVersion    - Firmware Version ID
+        - appId              - Application (version) ID
+        - firmwareHash       - Hash of the firmwareContent
+    - firmwareSlotIndex      - Slot where is going to be installed
+* DistributedFirmwareImage   - Firmware Image for SOFTWARE DISTRIBUTION ENTITY
+    - firmwareImage          - Binary
+    - firmwareName           - Name of the binary file to retrieve
+</pre></div>
+
+
+<p>MESSAGES</p>
+<div class="highlight"><pre><span></span>* RequestFirmwareLastVersion
+    - appId                   - ID of the Firmware requested
+* ReplyFirmwareLastVersion
+    - lastVersion             - Current DEVICE version or empty for N/A
+* RequestFirmware
+    - appId
+    - firmwareVersion         - Last stored version by SDE
+* ReplyFirmware
+    - firmwareImage           - If N/A an indicator (empty)
+</pre></div>
+
+
+<p>INFORMATION MAINTAINED IN EACH OF THE DATA-STRUCTURES</p>
+<div class="highlight"><pre><span></span>* SOFTWARE GENERATION ENTITY (SGE)
+    - signingPrivateKey        - SGE&#39;s Private key
+    - signingPublicKey         - SGE&#39;s Public Key
+
+* SOFTWARE DISTRIBUTION ENTITY (SDE)
+    - SDE&#39;s DTLS Keys (only one)
+        - dtlsPublicKey        - (Same pattern than for SGE)
+        - dtlsPrivateKey
+        - dtlsPsk          - The symmetric key (if PSK is supported)
+* List of slots
+    - SLOT 1 - firmwareImage (1st)
+    - SLOT 2 - firmwareImage (2nd)
+</pre></div>
+
+
+<p>PROTOCOL: Over the Air (OTA)</p>
+<ol>
+<li>DEVICE  contacts SDE for potential updates<ul>
+<li>Establish a secure channel with one of the following:<ul>
+<li><code>device.dtlsPrivateKey</code></li>
+<li><code>device.dtlsPublicKey</code></li>
+<li><code>dtlsPsk</code></li>
+</ul>
+</li>
+<li>DEVICE request <code>RequestFirmwareLastVersion</code> using <code>currentFirmwareImag.appId</code></li>
+<li>SDE reply with <code>ReplyFirmwareLastVersion</code></li>
+<li>The <code>ReplyFirmwareLastVersion.lastVersion</code> is compared against <code>currentFirmwareImage.firmwareMetaData.firmwareVersion</code></li>
+</ul>
+</li>
+<li>DEVICE download  <code>newFirmwareImage</code> from SDE<ul>
+<li>(if required) Establish a secure channel with one of the following:<ul>
+<li><code>device.dtlsPrivateKey &amp; sde.dtlsPublicKey</code></li>
+<li><code>dtlsPsk</code></li>
+</ul>
+</li>
+<li>DEVICE request with <code>RequestFirmware</code></li>
+<li>SDE reply with <code>replyFirmware</code>.</li>
+</ul>
+</li>
+<li>DEVICES verify and boot <code>newFirmwareImage</code><ul>
+<li>DEVICE verify <code>newFirmwareImage.firmwareMetaData.firmwareSignature</code>  with <code>SGE.signingPublicKey</code></li>
+</ul>
+</li>
+</ol>
+<hr>
+<h1>Experiment tests</h1>
+<p>There are five scenario to test:</p>
+<ol>
+<li>Good - Standard operation of OTA (new firmware available).</li>
+<li>Bad (TP_ID4) - The SDE offers a wrong signature firmware to the device.</li>
+<li>Ugly (TP_ID6)- The SDE offer a corrupted firmware to the device.</li>
+<li>Grey - Standard operation of OTA (not new firmware available)</li>
+<li>Blue (TP_ID3) - Communication is running over CoAP Secure</li>
+</ol>
+<h3>1. Good</h3>
+<ul>
+<li>This test is a normal execution of OTA protocol.</li>
+<li>Expected outcome:</li>
+<li><code>ReplyFirmwareLastVersion.appId</code> is the same than firmware booted.</li>
+<li><code>ReplyFirmware.firmwareSignature</code> is valid.</li>
+<li><code>ReplyFirmware.firmwareVersion</code> is greater than devices firmware in previous slot.</li>
+<li>Device boot from the new firmware version.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Good</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Step 1</td>
+<td>LoadBootloader -  The sensor loads a valid state of the image (Version 0x1)</td>
+</tr>
+<tr>
+<td>Step 2</td>
+<td>LoadFirmwareGood - The server load the firmware image version 0x3</td>
+</tr>
+<tr>
+<td>Step 3</td>
+<td><em>sendRequest</em> - The sensor sends a request to retrieve an image update</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NOTE</strong>: Step 3 requires to monitor the device serial interface.</p>
+<h3>2. Bad</h3>
+<ul>
+<li>The TP_ID4 is under monitoring on this test.</li>
+<li>"Two varieties of the attacks" documented are equivalent to one test:</li>
+<li>We introduce a variation of the <code>FirmwareImage</code>, the <code>FirmwareImageWithBadSignature</code> where all fields are valid, except that the signature is incorrect (e.g. generated with a different SGE key from the actual SGE key).<ul>
+<li>Such an image could be the result of a fake SGE (which does not have the true SGE key), but still manages to push some firmware update to the SDE</li>
+<li>it could be the result of a compromised SDE which tries to forge firmware updates, etc.</li>
+</ul>
+</li>
+<li>The protocol is run as usually, with a SGE that includes a <code>FirmwareImageWithBadSignature</code></li>
+<li>Expected outcome:<ul>
+<li><code>ReplyFirmwareLastVersion.appId</code> is the same than current firmware booted.</li>
+<li><code>ReplyFirmware.firmwareVersion</code> is greater than devices firmware in previous slot.</li>
+<li><code>newFirmwareImage.metadata.signature</code> is find invalid.</li>
+<li>The device does not boot from the new firmware version.</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>BAD</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Step 1</td>
+<td>LoadBootloader -  The sensor loads a valid state of the image (Version 0x1)</td>
+</tr>
+<tr>
+<td>Step 2</td>
+<td>LoadFirmwareBad - The server load the firmware image version 0x4</td>
+</tr>
+<tr>
+<td>Step 3</td>
+<td><em>sendRequest</em> - The sensor sends a request to retrieve an image update</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NOTE</strong>: Step 3 requires to monitor sensor serial interface.</p>
+<h3>3. Ugly</h3>
+<ul>
+<li>The TP_ID6 is under monitoring on this test.</li>
+<li>We introduce a variation of the <code>FirmwareImage</code>, the <code>FirmwareImageCorrupted</code> where all fields are valid (including signature), but the content of the firmware has been compromised.<ul>
+<li>Such an image could be the result of a fake SGE (which does not have the true SGE key), but still manages to push some firmware update to the SDE</li>
+<li>it could be the result of a compromised SDE which tries to forge firmware updates, etc.</li>
+</ul>
+</li>
+<li>The protocol is run as usually, with a SGE that includes a <code>FirmwareImageCorrupted</code></li>
+<li>Expected outcome:<ul>
+<li><code>ReplyFirmwareLastVersion.appId</code> is the same than current firmware booted.</li>
+<li><code>ReplyFirmware.firmwareVersion</code> is greater than devices firmware in previous slot.</li>
+<li><code>newFirmwareImage.metadata.hashing</code> is find invalid.</li>
+<li>The device does not boot from the new firmware version.</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Ugly</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Step 1</td>
+<td>LoadBootloader -  The sensor loads a valid state of the image (Version 0x1)</td>
+</tr>
+<tr>
+<td>Step 2</td>
+<td>LoadFirmwareUgly - The server load the firmware image version 0x5</td>
+</tr>
+<tr>
+<td>Step 3</td>
+<td><em>sendRequest</em> - The sensor sends a request to retrieve an image update</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NOTE</strong>: Step 3 requires to monitor sensor serial interface.</p>
+<h3>4. Grey</h3>
+<ul>
+<li>This test is a normal execution of OTA protocol.</li>
+<li>The three steps of the tests 1 are duplicated here.</li>
+<li>Expected outcome (after step 4): <code>ReplyFirmwareLastVersion.version</code> is equal than current firmware booted.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Grey</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Step 1</td>
+<td>LoadBootloader -  The sensor loads a valid state of the image (Version 0x1)</td>
+</tr>
+<tr>
+<td>Step 2</td>
+<td>LoadFirmwareGood - The server load the firmware image version 0x3</td>
+</tr>
+<tr>
+<td>Step 3</td>
+<td><em>sendRequest</em> - The sensor sends a request to retrieve an image update</td>
+</tr>
+<tr>
+<td>Step 4</td>
+<td><em>sendRequest</em> - The sensor sends a request to retrieve an image update</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NOTE</strong>: Steps 3 and 4 to monitor sensor serial interface.</p>
+<h3>5.  Blue</h3>
+<ul>
+<li>This test is a normal execution of OTA protocol.</li>
+<li>This can duplicate the steps for experiment 1 or experiment 4.</li>
+<li>The TP_ID3 is under monitoring on this test.</li>
+<li>Expected result: The communication was using CoAP Secure</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Blue</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Step 1</td>
+<td>LoadBootloader -  The sensor loads a valid state of the image (Version 0x1)</td>
+</tr>
+<tr>
+<td>Step 2</td>
+<td>LoadFirmwareGood - The server load the firmware image version 0x3</td>
+</tr>
+<tr>
+<td>Step 3</td>
+<td><em>sendRequest</em> - The sensor sends a request to retrieve an image update</td>
+</tr>
+<tr>
+<td>Step 4</td>
+<td>Process the network traffic</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NOTE</strong> Network traffic must be under monitoring.</p>
+<h3>Example</h3>
+<p>The following figure shows the initial deployment and the use of Tests 1,2 and 5 and how affects the internal bootloader of the device.</p>
+<p><img src="http://riot-otas.gforge.inria.fr/images/slots_OTA.png" alt="Deployment of firmwares over device" style="max-width:100%;"/></p>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="https://www.armour-project.eu">ARMOUR H2020 Project</a></li>
+                            <li><a href="http://riot-os.org/">RIOT O.S.</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
